@@ -5,7 +5,7 @@ const PORT = process.env.PORT || 3000;
 //importe Express para mas chevere
 app.use(express.json());
 
-//rutas tipo GET
+//rutas tipo GET(Metodo idempotente)
 app.get("/", (req, res) => {
   res.status(200).json({ ok: true, message: "Hola desde Express" });
 });
@@ -15,7 +15,7 @@ app.get("/ping", (req, res) => {
 });
 
 app.post("/echo", (req, res) => {
-  //Ruta tipo Post
+  //Ruta tipo Post(no idempotente)
   res.status(201).json({ received: req.body || null });
 });
 
