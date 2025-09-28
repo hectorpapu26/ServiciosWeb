@@ -1,34 +1,36 @@
-const express = require("express");
+require('dotenv').config();
+const express = require('express');
+const sequelize = require('./config/database');
+const routes = require('./routes');            
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-//importe Express para mas chevere
 app.use(express.json());
 
-//rutas tipo GET(Metodo idempotente)
-app.get("/", (req, res) => {
-  res.status(200).json({ ok: true, message: "Hola desde Express" });
-});
 
-app.get("/ping", (req, res) => {
-  res.status(200).json({ pong: true, time: new Date().toISOString() });
-});
+app.use((req, _res, next) => { console.log('IN:', req.method, req.url); next(); });
 
-app.post("/echo", (req, res) => {
-  //Ruta tipo Post(no idempotente)
-  res.status(201).json({ received: req.body || null });
-});
 
-app.use((req, res) => {
-  res.status(404).json({ error: "Not Found" });
-});
+app.use('/api', routes);
 
-app.use((err, req, res, next) => {
+// 404
+app.use((req, res) => res.status(404).json({ error: 'Not Found', path: req.path }));
+
+//errores
+app.use((err, _req, res, _next) => {
   console.error(err);
-  res.status(500).json({ error: "Internal Server Error" });
+  res.status(500).json({ error: 'Internal Server Error' });
 });
 
-//revivan el server
-app.listen(PORT, () => {
-  console.log(`API escuchando en http://localhost:${PORT}`);
-});
+(async () => {
+  try {
+    await sequelize.authenticate();
+    await sequelize.sync();
+    console.log('DB ready ✅');
+    app.listen(PORT, () => console.log(`API -> http://localhost:${PORT}`));
+  } catch (e) {
+    console.error('DB error ❌', e.message);
+    process.exit(1);
+  }
+})();
