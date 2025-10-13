@@ -1,4 +1,3 @@
-// controllers/auth.controller.js
 const userSvc = require('../services/user.service');
 const authSvc = require('../services/auth');
 
@@ -22,6 +21,6 @@ exports.login = async (req, res, next) => {
     const auth = await authSvc.authenticate(email, password);
     if (!auth) return res.status(401).json({ error: 'credenciales inválidas' });
 
-    return res.json({ ok: true, ...auth }); // { user, token }
+    return res.json({ ok: true, ...auth }); //corroborar que er servicio este en orden
   } catch (e) { next(e); }
 };
