@@ -1,23 +1,40 @@
-//const users = [];
-
-async function list() { return users; }
-async function getById(id) { return users.find(u => String(u.id) === String(id)) || null; }
-async function create(data) { const id = users.length ? users[users.length-1].id + 1 : 1; const u = { id, ...data }; users.push(u); return u; }
-async function update(id, data) { const i = users.findIndex(u => String(u.id) === String(id)); if (i<0) return null; users[i] = { ...users[i], ...data }; return users[i]; }
-async function remove(id) { const i = users.findIndex(u => String(u.id) === String(id)); if (i<0) return false; users.splice(i,1); return true; }
-
-const User = require('../models/User'); 
+// services/user.service.js
+const bcrypt = require('bcryptjs');
+const User = require('../models/User');
 
 async function findByEmail(email) {
   return User.findOne({ where: { email } });
 }
 
-async function create(data) {
- 
-  return User.create(data);
+async function getById(id) {
+  return User.findByPk(id);
 }
 
-module.exports = { findByEmail, create /*, list, getById, update, remove, ...*/ };
+async function list() {
+  return User.findAll();
+}
 
+async function create({ name, email, password }) {
+  const password_hash = await bcrypt.hash(password, 10);
+  return User.create({ name, email, password_hash });
+}
 
-module.exports = { list, getById, create, update, remove };
+async function update(id, data) {
+  const user = await User.findByPk(id);
+  if (!user) return null;
+  if (data.password) {
+    data.password_hash = await bcrypt.hash(data.password, 10);
+    delete data.password;
+  }
+  await user.update(data);
+  return user;
+}
+
+async function remove(id) {
+  const user = await User.findByPk(id);
+  if (!user) return false;
+  await user.destroy();
+  return true;
+}
+
+module.exports = { findByEmail, getById, list, create, update, remove };

@@ -1,14 +1,28 @@
-const { DataTypes } = require('sequelize');
+// models/User.js
+const { DataTypes, Model } = require('sequelize');
 const sequelize = require('../config/database');
+const bcrypt = require('bcryptjs');
 
-const User = sequelize.define(
-  'User',
+class User extends Model {
+  checkPassword(plain) {
+    // compara plano vs hash guardado
+    return bcrypt.compare(plain, this.password_hash);
+  }
+  toJSON() {
+    const v = { ...this.get() };
+    delete v.password_hash;   // nunca regreses el hash
+    return v;
+  }
+}
+
+User.init(
   {
     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
-    name: { type: DataTypes.STRING(100), allowNull: false },
-    email: { type: DataTypes.STRING(150), allowNull: false, unique: true, validate: { isEmail: true } }
+    name: { type: DataTypes.STRING, allowNull: false },
+    email: { type: DataTypes.STRING, allowNull: false, unique: true, validate: { isEmail: true } },
+    password_hash: { type: DataTypes.STRING, allowNull: false },
   },
-  { tableName: 'users', timestamps: false }
+  { sequelize, modelName: 'User', tableName: 'users', timestamps: true }
 );
 
 module.exports = User;

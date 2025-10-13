@@ -27,10 +27,10 @@ app.use((err, _req, res, _next) => {
   try {
     await sequelize.authenticate();
     await sequelize.sync();
-    console.log('DB ready ✅');
-    app.listen(PORT, () => console.log(`API -> http://localhost:${PORT}`));
+    console.log('DB ready');
+    app.listen(PORT, () => console.log(`http://localhost:${PORT}`));
   } catch (e) {
-    console.error('DB error ❌', e.message);
+    console.error('DB error', e.message);
     process.exit(1);
   }
 })();
