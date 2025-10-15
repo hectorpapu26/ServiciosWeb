@@ -1,12 +1,12 @@
-// services/auth.js
+//c
 const jwt = require('jsonwebtoken');
 const userSvc = require('./user.service');
 
 function signToken(user) {
   return jwt.sign(
-    { sub: user.id, email: user.email },               // payload mínimo
+    { sub: user.id, email: user.email },// payload
     process.env.JWT_SECRET,
-    { expiresIn: process.env.JWT_EXPIRES_IN || '1h' }  // reutilizable hasta que expire
+    { expiresIn: process.env.JWT_EXPIRES_IN || '1h' } 
   );
 }
 

@@ -1,26 +1,46 @@
 const userSvc = require('../services/user.service');
 const authSvc = require('../services/auth');
+const logger = require('../config/logger');
+
 
 exports.register = async (req, res, next) => {
   try {
-    const { name, email, password } = req.body || {};
+    const { name, email, password } = req.body;
+
     const exists = await userSvc.findByEmail(email);
-    if (exists) return res.status(400).json({ error: 'email ya está en uso' });
+    if (exists) {
+      logger.warn({ email }, 'Intento de registro con email existente');
+      return res.status(400).json({
+        errors: [{ field: 'email', msg: 'email ya registrado' }],
+      });
+    }
 
     const user = await userSvc.create({ name, email, password });
-    const token = authSvc.signToken(user);
-    return res.status(201).json({ ok: true, user: user.toJSON(), token });
-  } catch (e) { next(e); }
+    logger.info({ userId: user.id, email }, 'Usuario registrado');
+
+    // nunca regreses el hash (tu modelo ya lo oculta en toJSON)
+    res.status(201).json({ ok: true, user });
+  } catch (e) {
+    logger.error(e, 'Fallo en register');
+    next(e);
+  }
 };
 
 exports.login = async (req, res, next) => {
   try {
-    const { email, password } = req.body || {};
-    if (!email || !password) return res.status(400).json({ error: 'email y password son obligatorios' });
+    const { email, password } = req.body;
 
-    const auth = await authSvc.authenticate(email, password);
-    if (!auth) return res.status(401).json({ error: 'credenciales inválidas' });
+    const user = await userSvc.authenticate(email, password); // <- usa userSvc
+    if (!user) {
+      logger.warn({ email }, 'Login inválido');
+      return res.status(401).json({ error: 'credenciales inválidas' });
+    }
 
-    return res.json({ ok: true, ...auth }); //corroborar que er servicio este en orden
-  } catch (e) { next(e); }
+    logger.info({ userId: user.id, email }, 'Login OK');
+    // si luego agregas JWT, emítelo aquí
+    res.json({ ok: true, user });
+  } catch (e) {
+    logger.error(e, 'Fallo en login');
+    next(e);
+  }
 };

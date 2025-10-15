@@ -1,16 +1,18 @@
-// models/User.js
+//c
 const { DataTypes, Model } = require('sequelize');
 const sequelize = require('../config/database');
 const bcrypt = require('bcryptjs');
+timestamps: false
+
 
 class User extends Model {
   checkPassword(plain) {
-    // compara plano vs hash guardado
+
     return bcrypt.compare(plain, this.password_hash);
   }
   toJSON() {
     const v = { ...this.get() };
-    delete v.password_hash;   // nunca regreses el hash
+    delete v.password_hash;
     return v;
   }
 }

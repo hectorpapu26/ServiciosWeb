@@ -1,36 +1,41 @@
 require('dotenv').config();
 const express = require('express');
 const sequelize = require('./config/database');
-const routes = require('./routes');            
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+//logs
+const morgan = require('morgan');
+const logger = require('./config/logger');
+
+//morgan escriba con Pino
+const morganToPino = {
+  write: (msg) => logger.info(msg.trim())
+};
+
 app.use(express.json());
+app.use(morgan('combined', { stream: morganToPino })); // logs de HTTP
 
+//rutas
+app.use('/api', require('./routes'));
 
-app.use((req, _res, next) => { console.log('IN:', req.method, req.url); next(); });
-
-
-app.use('/api', routes);
-
-// 404
-app.use((req, res) => res.status(404).json({ error: 'Not Found', path: req.path }));
-
-//errores
+// 404 y errores
+app.use((req, res) => res.status(404).json({ error: 'Not Found', path: req.originalUrl }));
 app.use((err, _req, res, _next) => {
-  console.error(err);
+  logger.error(err, 'Unhandled error'); //pino para errores
   res.status(500).json({ error: 'Internal Server Error' });
 });
 
+// DB y arranque
 (async () => {
   try {
     await sequelize.authenticate();
     await sequelize.sync();
-    console.log('DB ready');
-    app.listen(PORT, () => console.log(`http://localhost:${PORT}`));
+    logger.info('DB ready');
+    app.listen(PORT, () => logger.info(`API -> http://localhost:${PORT}`));
   } catch (e) {
-    console.error('DB error', e.message);
+    logger.fatal(e, 'DB error');
     process.exit(1);
   }
 })();
