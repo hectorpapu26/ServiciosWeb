@@ -1,5 +1,5 @@
 const router   = require('express').Router();
-const ctrl     = require('../../controllers/auth.controller'), register = require('../../controllers/register');
+const ctrl     = require('../../controllers/auth.controller');
 const validate = require('../../middlewares/validate');
 const { body } = require('express-validator');
 const userSvc  = require('../../services/user.service');
@@ -32,7 +32,7 @@ router.post(
       }),
   ],
   validate,       
-  register.register    
+  ctrl.register    
 );
 
 
@@ -43,7 +43,7 @@ router.post(
     body('password').notEmpty().withMessage('password es obligatorio'),
   ],
   validate,
-  register.login
+  ctrl.login
 );
 
 module.exports = router;

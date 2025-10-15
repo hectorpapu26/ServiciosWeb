@@ -1,4 +1,4 @@
-// middlewares/requireAuth.js
+//
 const jwt = require('jsonwebtoken');
 const requireAuth = require('../../middlewares/requireAuth');
 router.get('/', requireAuth, ctrl.list);
