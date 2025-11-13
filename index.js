@@ -1,6 +1,9 @@
 require('dotenv').config();
 const express = require('express');
 const sequelize = require('./config/database');
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpec = require('./config/swagger');
+
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -16,6 +19,7 @@ const morganToPino = {
 
 app.use(express.json());
 app.use(morgan('combined', { stream: morganToPino })); // logs de HTTP
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 //rutas
 app.use('/api', require('./routes'));
