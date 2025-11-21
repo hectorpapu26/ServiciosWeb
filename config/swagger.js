@@ -36,7 +36,7 @@ const options = {
       }
     }
   },
-  apis: ['./routes/**/*.js'], // <- aquí leerá tus comentarios JSDoc
+  apis: ['./routes/**/*.js'],
 };
 
 module.exports = require('swagger-jsdoc')(options);
