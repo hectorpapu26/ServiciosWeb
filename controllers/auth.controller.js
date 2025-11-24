@@ -38,7 +38,7 @@ exports.login = async (req, res, next) => {
     logger.info({ userId: user.id, email }, 'Login OK');
     res.json({ ok: true, user, user, token });
   } catch (e) {
-    logger.error(e, 'Fallo en login');// realizar 
+    logger.error(e, 'Fallo en login');
     next(e);
   }
 };

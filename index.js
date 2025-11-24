@@ -3,7 +3,7 @@ const express = require('express');
 const sequelize = require('./config/database');
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./config/swagger');
-
+const path = require('path');                       // 👈 NUEVO
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -19,19 +19,32 @@ const morganToPino = {
 
 app.use(express.json());
 app.use(morgan('combined', { stream: morganToPino })); // logs de HTTP
+
+// ================== FRONTEND (Views) ==================
+app.use(express.static(path.join(__dirname, 'Views')));          // 👈 sirve /Views
+app.get('/', (req, res) => {                                     // 👈 GET /
+  res.sendFile(path.join(__dirname, 'Views', 'index.html'));
+});
+
+// ================== SWAGGER ==================
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-//rutas
+// ================== RUTAS API ==================
+// Mantienes el prefijo /api como tú quieres
 app.use('/api', require('./routes'));
 
-// 404 y errores
-app.use((req, res) => res.status(404).json({ error: 'Not Found', path: req.originalUrl }));
+// ================== 404 y ERRORES ==================
+app.use((req, res) => res.status(404).json({ 
+  error: 'Not Found', 
+  path: req.originalUrl 
+}));
+
 app.use((err, _req, res, _next) => {
   logger.error(err, 'Unhandled error'); //pino para errores
   res.status(500).json({ error: 'Internal Server Error' });
 });
 
-// DB y arranque
+// ================== DB y ARRANQUE ==================
 (async () => {
   try {
     await sequelize.authenticate();
